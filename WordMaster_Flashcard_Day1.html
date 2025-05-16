@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WordMaster Day 1 Quiz</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f2f2f2; }
+    .card { background: white; padding: 2rem; margin: 2rem auto; border-radius: 10px; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    input[type="text"] { width: 100%; padding: 0.5rem; font-size: 1rem; margin-top: 1rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; margin-right: 0.5rem; }
+    .result { margin-top: 1rem; font-weight: bold; }
+    .controls { margin-top: 1rem; }
+    .note { font-size: 0.9rem; color: gray; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="question">Loading...</h2>
+    <button onclick="speak()">🔊 발음 듣기</button>
+    <input type="text" id="answer" placeholder="Type the answer here" />
+    <div class="controls">
+      <button onclick="checkAnswer()">Submit</button>
+      <button onclick="toggleDirection()">Switch Direction</button>
+      <button onclick="shuffleCards()">Shuffle</button>
+      <button onclick="restart()">Restart</button>
+      <button onclick="downloadWrongAnswers()">Download Wrong Answers</button>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="result" id="score"></div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <script>
+    const flashcards = [
+      { term: "include", definition: "포함하다" },
+      { term: "produce", definition: "생산하다, 만들어 내다, 초래하다" },
+      { term: "belief", definition: "믿음, 신념, 신앙" },
+      { term: "similar", definition: "비슷한, 유사한" },
+      { term: "moment", definition: "순간, 중요성" },
+      { term: "situation", definition: "상황, 위치" },
+      { term: "improve", definition: "개선하다, 향상하다" },
+      { term: "increase", definition: "증가하다, 증가시키다" },
+      { term: "decrease", definition: "감소하다, 감소시키다" },
+      { term: "share", definition: "나누다, 공유하다" },
+      { term: "consider", definition: "고려(숙고)하다, ~으로 여기다" },
+      { term: "supply", definition: "공급하다, 제공하다" },
+      { term: "provide", definition: "공급하다, 제공하다, 대비하다" },
+      { term: "practical", definition: "실용적인, 실제적인" },
+      { term: "express", definition: "표현하다, 나타내다, 속달로 보내다" },
+      { term: "emotion", definition: "감정, 정서" },
+      { term: "common", definition: "흔한, 보통의, 공통의" },
+      { term: "recover", definition: "회복하다, 되찾다" },
+      { term: "advanced", definition: "진보한, 상급의" },
+      { term: "indifferent", definition: "무관심한" },
+      { term: "reject", definition: "거절하다, 거부하다" },
+      { term: "refuse", definition: "거절하다, 거부하다" },
+      { term: "accept", definition: "받아들이다, 수락하다" },
+      { term: "experience", definition: "경험하다, 경험" },
+      { term: "certain", definition: "확실한, 확신하는, 어떤" },
+      { term: "fade", definition: "희미해지다, 사라지다" },
+      { term: "disappear", definition: "사라지다, 없어지다" },
+      { term: "emerge", definition: "나타나다, 모습을 드러내다" },
+      { term: "grief", definition: "(깊은) 슬픔, 비탄" },
+      { term: "slight", definition: "약간의, 하찮은" },
+      { term: "success", definition: "성공, 성공한 것" },
+      { term: "failure", definition: "실패, 실패작, 고장" },
+      { term: "run into", definition: "~와 우연히 만나다, ~와 충돌하다" },
+      { term: "depend on", definition: "~에 의존하다, ~에 달려 있다" },
+      { term: "carry out", definition: "~을 수행하다, ~을 완수하다" },
+      { term: "quantity", definition: "양, 수량" },
+      { term: "superior", definition: "뛰어난, 우월한, 상급의" },
+      { term: "inferior", definition: "열등한, 하위의, 손아랫사람" },
+      { term: "seek", definition: "찾다, 추구하다, 하다" },
+      { term: "aim", definition: "목표, 목적" }
+    ];
+
+    let currentIndex = 0;
+    let isTermToDefinition = true;
+    let score = 0;
+    let wrongAnswers = [];
+
+    function loadQuestion() {
+      const card = flashcards[currentIndex];
+      document.getElementById("question").textContent = isTermToDefinition ? card.term : card.definition;
+      document.getElementById("answer").value = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("score").textContent = `Score: ${score}/${flashcards.length}`;
+      speak(); // 자동 발음
+    }
+
+    function checkAnswer() {
+      const userAnswer = document.getElementById("answer").value.trim();
+      const correct = isTermToDefinition ? flashcards[currentIndex].definition : flashcards[currentIndex].term;
+      if (userAnswer === correct) {
+        document.getElementById("result").textContent = "Correct!";
+        score++;
+      } else {
+        document.getElementById("result").textContent = `Incorrect. 정답: ${correct}`;
+        wrongAnswers.push({
+          question: isTermToDefinition ? flashcards[currentIndex].term : flashcards[currentIndex].definition,
+          correctAnswer: correct
+        });
+      }
+      currentIndex++;
+      if (currentIndex < flashcards.length) {
+        setTimeout(loadQuestion, 1500);
+      } else {
+        document.getElementById("question").textContent = "All done! Great job.";
+        document.getElementById("answer").style.display = "none";
+        document.getElementById("note").textContent = "오답노트를 다운로드하려면 버튼을 눌러보세요.";
+      }
+      document.getElementById("score").textContent = `Score: ${score}/${flashcards.length}`;
+    }
+
+    function toggleDirection() {
+      isTermToDefinition = !isTermToDefinition;
+      restart();
+    }
+
+    function shuffleCards() {
+      for (let i = flashcards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+      }
+      restart();
+    }
+
+    function restart() {
+      currentIndex = 0;
+      score = 0;
+      wrongAnswers = [];
+      document.getElementById("answer").style.display = "inline";
+      document.getElementById("note").textContent = "";
+      loadQuestion();
+    }
+
+    function speak() {
+      const utterance = new SpeechSynthesisUtterance();
+      const card = flashcards[currentIndex];
+      utterance.text = isTermToDefinition ? card.term : card.definition;
+      utterance.lang = isTermToDefinition ? "en-US" : "ko-KR";
+      speechSynthesis.speak(utterance);
+    }
+
+    function downloadWrongAnswers() {
+      if (wrongAnswers.length === 0) {
+        alert("오답이 없습니다!");
+        return;
+      }
+      const text = wrongAnswers.map(item => `문제: ${item.question}
+정답: ${item.correctAnswer}
+`).join("\n");
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "오답노트.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
